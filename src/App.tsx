@@ -15,7 +15,6 @@ export default function App() {
   const [customDistance, setCustomDistance] = useState<string>('0.5');
   const [rightEye, setRightEye] = useState<EyePrescription>({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
   const [leftEye, setLeftEye] = useState<EyePrescription>({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
-  const [results, setResults] = useState<{ right: any, left: any } | null>(null);
 
   const calculateResult = (eye: EyePrescription, mode: string, custom: string) => {
     const sVal = parseFloat(eye.sphereValue) || 0;
@@ -55,19 +54,14 @@ export default function App() {
     };
   };
 
-  const handleConfirm = () => {
-    const right = calculateResult(rightEye, distanceMode, customDistance);
-    const left = calculateResult(leftEye, distanceMode, customDistance);
-    setResults({ right, left });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const rightResult = useMemo(() => calculateResult(rightEye, distanceMode, customDistance), [rightEye, distanceMode, customDistance]);
+  const leftResult = useMemo(() => calculateResult(leftEye, distanceMode, customDistance), [leftEye, distanceMode, customDistance]);
 
   const reset = () => {
     setRightEye({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
     setLeftEye({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
     setCustomDistance('0.5');
     setDistanceMode('1m');
-    setResults(null);
   };
 
   const formatValue = (val: string) => {
@@ -105,20 +99,21 @@ export default function App() {
             <div className="bg-blue-600 rounded-3xl shadow-xl shadow-blue-200 py-3 px-6 md:py-4 md:px-8 text-white">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xs font-bold opacity-70 uppercase tracking-[0.2em]">眼位度數結果</h2>
+                <div className="px-2 py-1 bg-white/10 rounded text-[10px] font-medium">即時換算</div>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-12">
                 {/* Right Result */}
                 <ResultDisplay 
                   label="右" 
-                  result={results?.right} 
+                  result={rightResult} 
                   formatValue={formatValue}
                 />
 
                 {/* Left Result */}
                 <ResultDisplay 
                   label="左" 
-                  result={results?.left} 
+                  result={leftResult} 
                   formatValue={formatValue}
                 />
               </div>
@@ -261,15 +256,6 @@ export default function App() {
                 </div>
               </div>
             </section>
-
-            {/* Confirm Button */}
-            <button 
-              onClick={handleConfirm}
-              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <CheckCircle2 size={20} />
-              確認計算結果
-            </button>
           </div>
         </div>
         
