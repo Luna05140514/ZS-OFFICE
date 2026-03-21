@@ -96,8 +96,8 @@ export default function App() {
           
           {/* Results Section - Now at the top for mobile priority */}
           <div className="order-1">
-            <div className="bg-blue-600 rounded-3xl shadow-xl shadow-blue-200 p-6 md:p-8 text-white">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-blue-600 rounded-3xl shadow-xl shadow-blue-200 py-3 px-6 md:py-4 md:px-8 text-white">
+              <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xs font-bold opacity-70 uppercase tracking-[0.2em]">眼位度數結果</h2>
                 <div className="px-2 py-1 bg-white/10 rounded text-[10px] font-medium">即時計算</div>
               </div>
@@ -118,7 +118,7 @@ export default function App() {
                 />
               </div>
 
-              <div className="mt-8 pt-4 border-t border-white/10 text-[10px] opacity-50 leading-relaxed italic">
+              <div className="mt-4 pt-2 border-t border-white/10 text-[10px] opacity-50 leading-relaxed italic">
                 * 球面 = 遠用球面 + (1/d) + 0.20D。大字為建議度數 (0.25D 單位)。
               </div>
             </div>
