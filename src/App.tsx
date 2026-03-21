@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calculator, Info, RefreshCw, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Calculator, Info, RefreshCw, ArrowRight, CheckCircle2, Plus, Minus } from 'lucide-react';
 
 type Distance = '1m' | '2m' | '4m';
 
@@ -12,9 +12,10 @@ interface EyePrescription {
 
 export default function App() {
   const [distanceMode, setDistanceMode] = useState<'1m' | '2m' | '4m' | 'custom'>('1m');
-  const [customDistance, setCustomDistance] = useState<string>('');
+  const [customDistance, setCustomDistance] = useState<string>('0.5');
   const [rightEye, setRightEye] = useState<EyePrescription>({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
   const [leftEye, setLeftEye] = useState<EyePrescription>({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
+  const [results, setResults] = useState<{ right: any, left: any } | null>(null);
 
   const calculateResult = (eye: EyePrescription, mode: string, custom: string) => {
     const sVal = parseFloat(eye.sphereValue) || 0;
@@ -54,14 +55,19 @@ export default function App() {
     };
   };
 
-  const rightResult = useMemo(() => calculateResult(rightEye, distanceMode, customDistance), [rightEye, distanceMode, customDistance]);
-  const leftResult = useMemo(() => calculateResult(leftEye, distanceMode, customDistance), [leftEye, distanceMode, customDistance]);
+  const handleConfirm = () => {
+    const right = calculateResult(rightEye, distanceMode, customDistance);
+    const left = calculateResult(leftEye, distanceMode, customDistance);
+    setResults({ right, left });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const reset = () => {
     setRightEye({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
     setLeftEye({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
-    setCustomDistance('');
+    setCustomDistance('0.5');
     setDistanceMode('1m');
+    setResults(null);
   };
 
   const formatValue = (val: string) => {
@@ -99,21 +105,20 @@ export default function App() {
             <div className="bg-blue-600 rounded-3xl shadow-xl shadow-blue-200 py-3 px-6 md:py-4 md:px-8 text-white">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xs font-bold opacity-70 uppercase tracking-[0.2em]">眼位度數結果</h2>
-                <div className="px-2 py-1 bg-white/10 rounded text-[10px] font-medium">即時計算</div>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-12">
                 {/* Right Result */}
                 <ResultDisplay 
-                  label="O.D." 
-                  result={rightResult} 
+                  label="右" 
+                  result={results?.right} 
                   formatValue={formatValue}
                 />
 
                 {/* Left Result */}
                 <ResultDisplay 
-                  label="O.S." 
-                  result={leftResult} 
+                  label="左" 
+                  result={results?.left} 
                   formatValue={formatValue}
                 />
               </div>
@@ -136,30 +141,54 @@ export default function App() {
                     <span className="text-[9px] opacity-70">{d}</span>
                   </button>
                 ))}
-                <div className={`relative rounded-xl border-2 transition-all p-1 flex flex-col items-center justify-center gap-0.5 ${
+                <div className={`relative rounded-xl border-2 transition-all p-1 flex flex-col items-center justify-center gap-1 ${
                   distanceMode === 'custom' 
                     ? 'border-blue-600 bg-blue-50' 
                     : 'border-gray-100 bg-white'
                 }`}>
-                  <button 
-                    onClick={() => setDistanceMode('custom')}
-                    className="absolute inset-0 z-0"
-                  />
                   <span className={`text-[9px] font-bold uppercase tracking-tight relative z-10 text-center leading-none ${
                     distanceMode === 'custom' ? 'text-blue-600' : 'text-gray-400'
                   }`}>自選 (m)</span>
-                  <input 
-                    type="number"
-                    step="0.5"
-                    placeholder="0.0"
-                    value={customDistance}
-                    onChange={(e) => {
-                      setCustomDistance(e.target.value);
-                      setDistanceMode('custom');
-                    }}
-                    className={`w-full bg-transparent border-none outline-none text-center font-bold text-[11px] relative z-10 p-0 ${
-                      distanceMode === 'custom' ? 'text-blue-700 placeholder:text-blue-300' : 'text-gray-500 placeholder:text-gray-300'
-                    }`}
+                  
+                  <div className="flex items-center justify-between w-full relative z-10 px-0.5">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const val = parseFloat(customDistance) || 0;
+                        setCustomDistance(Math.max(0.5, val - 0.5).toFixed(1));
+                        setDistanceMode('custom');
+                      }}
+                      className={`p-0.5 rounded-md transition-colors ${
+                        distanceMode === 'custom' ? 'hover:bg-blue-200 text-blue-600' : 'hover:bg-gray-100 text-gray-400'
+                      }`}
+                    >
+                      <Minus size={10} strokeWidth={3} />
+                    </button>
+                    
+                    <span className={`font-bold text-[11px] tabular-nums ${
+                      distanceMode === 'custom' ? 'text-blue-700' : 'text-gray-500'
+                    }`}>
+                      {customDistance}
+                    </span>
+                    
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const val = parseFloat(customDistance) || 0;
+                        setCustomDistance((val + 0.5).toFixed(1));
+                        setDistanceMode('custom');
+                      }}
+                      className={`p-0.5 rounded-md transition-colors ${
+                        distanceMode === 'custom' ? 'hover:bg-blue-200 text-blue-600' : 'hover:bg-gray-100 text-gray-400'
+                      }`}
+                    >
+                      <Plus size={10} strokeWidth={3} />
+                    </button>
+                  </div>
+
+                  <button 
+                    onClick={() => setDistanceMode('custom')}
+                    className="absolute inset-0 z-0"
                   />
                 </div>
               </div>
@@ -186,7 +215,7 @@ export default function App() {
                 {/* Right Eye */}
                 <div className="flex items-center gap-4">
                   <div className="shrink-0 w-10 text-center">
-                    <div className="text-[11px] font-black text-blue-600 tracking-tighter leading-none">O.D.</div>
+                    <div className="text-[11px] font-black text-blue-600 tracking-tighter leading-none">右</div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 flex-1">
                     <PrescriptionInput 
@@ -210,7 +239,7 @@ export default function App() {
                 {/* Left Eye */}
                 <div className="flex items-center gap-4">
                   <div className="shrink-0 w-10 text-center">
-                    <div className="text-[11px] font-black text-indigo-600 tracking-tighter leading-none">O.S.</div>
+                    <div className="text-[11px] font-black text-indigo-600 tracking-tighter leading-none">左</div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 flex-1">
                     <PrescriptionInput 
@@ -232,6 +261,15 @@ export default function App() {
                 </div>
               </div>
             </section>
+
+            {/* Confirm Button */}
+            <button 
+              onClick={handleConfirm}
+              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            >
+              <CheckCircle2 size={20} />
+              確認計算結果
+            </button>
           </div>
         </div>
         
@@ -295,6 +333,7 @@ function PrescriptionInput({
         <input
           type="number"
           step="0.25"
+          min="0"
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           onBlur={handleBlur}
