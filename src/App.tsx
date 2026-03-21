@@ -259,10 +259,13 @@ export default function App() {
           </div>
         </div>
         
-        {/* Disclaimer */}
-        <div className="mt-8 text-right">
+        {/* Footer Info */}
+        <div className="mt-8 flex items-end justify-between">
           <p className="text-[10px] font-medium text-gray-400 italic tracking-wider">
             * 計算結果僅供參考
+          </p>
+          <p className="text-[10px] font-bold text-gray-400 tracking-widest">
+            製作者 ＴＯＮＹ
           </p>
         </div>
       </main>
