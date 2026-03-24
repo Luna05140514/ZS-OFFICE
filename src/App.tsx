@@ -16,7 +16,7 @@ export default function App() {
   const [rightEye, setRightEye] = useState<EyePrescription>({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
   const [leftEye, setLeftEye] = useState<EyePrescription>({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
 
-  const calculateResult = (eye: EyePrescription, mode: string, custom: string) => {
+  const calculateResult = (eye: EyePrescription, mode: string, custom: string, includeAdjustment = true) => {
     const sVal = parseFloat(eye.sphereValue) || 0;
     const sphere = eye.sphereSign === '+' ? sVal : -sVal;
     const cylinder = -(parseFloat(eye.cylinderValue) || 0);
@@ -36,10 +36,10 @@ export default function App() {
     // 導數 (1/d)
     const reciprocal = 1 / d;
     
-    // 二十度 (0.20D)
-    const constantAdjustment = 0.20;
+    // 二十度 (0.20D) - 僅在左側框框使用
+    const constantAdjustment = includeAdjustment ? 0.20 : 0;
 
-    // Formula: S = X + (1/d) + 0.20
+    // Formula: S = X + (1/d) + (optional 0.20)
     let rawS = sphere + reciprocal + constantAdjustment;
     
     // 四捨五入至 0.25D
@@ -54,8 +54,11 @@ export default function App() {
     };
   };
 
-  const rightResult = useMemo(() => calculateResult(rightEye, distanceMode, customDistance), [rightEye, distanceMode, customDistance]);
-  const leftResult = useMemo(() => calculateResult(leftEye, distanceMode, customDistance), [leftEye, distanceMode, customDistance]);
+  const rightResult = useMemo(() => calculateResult(rightEye, distanceMode, customDistance, true), [rightEye, distanceMode, customDistance]);
+  const leftResult = useMemo(() => calculateResult(leftEye, distanceMode, customDistance, true), [leftEye, distanceMode, customDistance]);
+  
+  const rightResultAbove = useMemo(() => calculateResult(rightEye, distanceMode, customDistance, false), [rightEye, distanceMode, customDistance]);
+  const leftResultAbove = useMemo(() => calculateResult(leftEye, distanceMode, customDistance, false), [leftEye, distanceMode, customDistance]);
 
   const reset = () => {
     setRightEye({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
@@ -96,26 +99,59 @@ export default function App() {
           
           {/* Results Section - Now at the top for mobile priority */}
           <div className="order-1 space-y-4">
-            <div className="bg-blue-600 rounded-3xl shadow-xl shadow-blue-200 py-3 px-6 md:py-4 md:px-8 text-white">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xs font-bold opacity-70 uppercase tracking-[0.2em]">眼位度數結果</h2>
-                <div className="px-2 py-1 bg-white/10 rounded text-[10px] font-medium">即時換算</div>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-12">
-                {/* Right Result */}
-                <ResultDisplay 
-                  label="右" 
-                  result={rightResult} 
-                  formatValue={formatValue}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Eye Position Results */}
+              <div className="bg-blue-600 rounded-3xl shadow-xl shadow-blue-200 py-3 px-6 md:py-4 md:px-6 text-white">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-bold opacity-90 uppercase tracking-[0.2em]">眼位度數</h2>
+                  <div className="px-2 py-1 bg-white/10 rounded text-[10px] font-medium">即時換算</div>
+                </div>
+                
+                <div className="space-y-6">
+                  {/* Right Result */}
+                  <ResultDisplay 
+                    label="右" 
+                    result={rightResult} 
+                    formatValue={formatValue}
+                    largeRaw
+                  />
 
-                {/* Left Result */}
-                <ResultDisplay 
-                  label="左" 
-                  result={leftResult} 
-                  formatValue={formatValue}
-                />
+                  {/* Left Result */}
+                  <ResultDisplay 
+                    label="左" 
+                    result={leftResult} 
+                    formatValue={formatValue}
+                    largeRaw
+                  />
+                </div>
+              </div>
+
+              {/* 6mm Above Results */}
+              <div className="bg-indigo-600 rounded-3xl shadow-xl shadow-indigo-200 py-3 px-6 md:py-4 md:px-6 text-white">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-bold opacity-90 uppercase tracking-[0.2em]">眼位上 6mm 度數</h2>
+                  <div className="px-2 py-1 bg-white/10 rounded text-[10px] font-medium">即時換算</div>
+                </div>
+                
+                <div className="space-y-6">
+                  {/* Right Result */}
+                  <ResultDisplay 
+                    label="右" 
+                    result={rightResultAbove} 
+                    formatValue={formatValue}
+                    useRawAsMain
+                    hideRaw
+                  />
+
+                  {/* Left Result */}
+                  <ResultDisplay 
+                    label="左" 
+                    result={leftResultAbove} 
+                    formatValue={formatValue}
+                    useRawAsMain
+                    hideRaw
+                  />
+                </div>
               </div>
             </div>
 
@@ -145,7 +181,7 @@ export default function App() {
                     distanceMode === 'custom' ? 'text-blue-600' : 'text-gray-400'
                   }`}>自選 (m)</span>
                   
-                  <div className="flex items-center justify-between w-full relative z-10 px-0.5">
+                  <div className="flex items-center justify-between w-full relative z-10 px-1">
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -153,14 +189,14 @@ export default function App() {
                         setCustomDistance(Math.max(0.5, val - 0.5).toFixed(1));
                         setDistanceMode('custom');
                       }}
-                      className={`p-0.5 rounded-md transition-colors ${
-                        distanceMode === 'custom' ? 'hover:bg-blue-200 text-blue-600' : 'hover:bg-gray-100 text-gray-400'
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        distanceMode === 'custom' ? 'bg-blue-100/50 hover:bg-blue-200 text-blue-600' : 'hover:bg-gray-100 text-gray-400'
                       }`}
                     >
-                      <Minus size={10} strokeWidth={3} />
+                      <Minus size={14} strokeWidth={3} />
                     </button>
                     
-                    <span className={`font-bold text-[11px] tabular-nums ${
+                    <span className={`font-bold text-[12px] tabular-nums ${
                       distanceMode === 'custom' ? 'text-blue-700' : 'text-gray-500'
                     }`}>
                       {customDistance}
@@ -173,11 +209,11 @@ export default function App() {
                         setCustomDistance((val + 0.5).toFixed(1));
                         setDistanceMode('custom');
                       }}
-                      className={`p-0.5 rounded-md transition-colors ${
-                        distanceMode === 'custom' ? 'hover:bg-blue-200 text-blue-600' : 'hover:bg-gray-100 text-gray-400'
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        distanceMode === 'custom' ? 'bg-blue-100/50 hover:bg-blue-200 text-blue-600' : 'hover:bg-gray-100 text-gray-400'
                       }`}
                     >
-                      <Plus size={10} strokeWidth={3} />
+                      <Plus size={14} strokeWidth={3} />
                     </button>
                   </div>
 
@@ -334,7 +370,21 @@ function PrescriptionInput({
   );
 }
 
-function ResultDisplay({ label, result, formatValue }: { label: string, result: { sphere: string, sphereRounded: string, cylinder: string, cylinderRounded: string } | null, formatValue: (v: string) => string }) {
+function ResultDisplay({ 
+  label, 
+  result, 
+  formatValue, 
+  largeRaw = false, 
+  hideRaw = false, 
+  useRawAsMain = false 
+}: { 
+  label: string, 
+  result: { sphere: string, sphereRounded: string, cylinder: string, cylinderRounded: string } | null, 
+  formatValue: (v: string) => string, 
+  largeRaw?: boolean,
+  hideRaw?: boolean,
+  useRawAsMain?: boolean
+}) {
   return (
     <div className="flex items-center gap-4">
       <div className="w-10 shrink-0">
@@ -356,22 +406,26 @@ function ResultDisplay({ label, result, formatValue }: { label: string, result: 
                 <span className="text-xs font-bold opacity-40 shrink-0">S</span>
                 <div className="flex flex-col">
                   <div className="text-2xl font-bold tabular-nums tracking-tighter leading-none">
-                    {formatValue(result.sphereRounded)}
+                    {formatValue(useRawAsMain ? result.sphere : result.sphereRounded)}
                   </div>
-                  <div className="text-[8px] opacity-30 font-medium mt-1">
-                    {formatValue(result.sphere)}
-                  </div>
+                  {!hideRaw && (
+                    <div className={`font-medium mt-1 ${largeRaw ? 'text-[11px] opacity-60' : 'text-[8px] opacity-30'}`}>
+                      {formatValue(result.sphere)}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-xs font-bold opacity-40 shrink-0">C</span>
                 <div className="flex flex-col">
                   <div className="text-2xl font-bold tabular-nums tracking-tighter leading-none">
-                    {formatValue(result.cylinderRounded)}
+                    {formatValue(useRawAsMain ? result.cylinder : result.cylinderRounded)}
                   </div>
-                  <div className="text-[8px] opacity-30 font-medium mt-1">
-                    {formatValue(result.cylinder)}
-                  </div>
+                  {!hideRaw && (
+                    <div className={`font-medium mt-1 ${largeRaw ? 'text-[11px] opacity-60' : 'text-[8px] opacity-30'}`}>
+                      {formatValue(result.cylinder)}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
