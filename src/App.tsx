@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calculator, Info, RefreshCw, ArrowRight, CheckCircle2, Plus, Minus } from 'lucide-react';
+import { Calculator, Info, RefreshCw, ArrowRight, CheckCircle2, Plus, Minus, ChevronDown } from 'lucide-react';
 
 type Distance = '1m' | '2m' | '4m';
 
@@ -12,7 +12,7 @@ interface EyePrescription {
 
 export default function App() {
   const [distanceMode, setDistanceMode] = useState<'1m' | '2m' | '4m' | 'custom'>('1m');
-  const [customDistance, setCustomDistance] = useState<string>('0.5');
+  const [customDistance, setCustomDistance] = useState<string>('1.5');
   const [rightEye, setRightEye] = useState<EyePrescription>({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
   const [leftEye, setLeftEye] = useState<EyePrescription>({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
 
@@ -172,55 +172,39 @@ export default function App() {
                     <span className="text-[9px] opacity-70">{d}</span>
                   </button>
                 ))}
-                <div className={`relative rounded-xl border-2 transition-all p-1 flex flex-col items-center justify-center gap-1 ${
-                  distanceMode === 'custom' 
-                    ? 'border-blue-600 bg-blue-50' 
-                    : 'border-gray-100 bg-white'
-                }`}>
+                <div 
+                  onClick={() => setDistanceMode('custom')}
+                  className={`relative rounded-xl border-2 transition-all p-1 flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                    distanceMode === 'custom' 
+                      ? 'border-blue-600 bg-blue-50' 
+                      : 'border-gray-100 bg-white hover:border-gray-200'
+                  }`}
+                >
                   <span className={`text-[9px] font-bold uppercase tracking-tight relative z-10 text-center leading-none ${
                     distanceMode === 'custom' ? 'text-blue-600' : 'text-gray-400'
                   }`}>自選 (m)</span>
                   
-                  <div className="flex items-center justify-between w-full relative z-10 px-1">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const val = parseFloat(customDistance) || 0;
-                        setCustomDistance(Math.max(0.5, val - 0.5).toFixed(1));
+                  <div className="relative w-full flex items-center justify-center">
+                    <select
+                      value={customDistance}
+                      onChange={(e) => {
+                        setCustomDistance(e.target.value);
                         setDistanceMode('custom');
                       }}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        distanceMode === 'custom' ? 'bg-blue-100/50 hover:bg-blue-200 text-blue-600' : 'hover:bg-gray-100 text-gray-400'
-                      }`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                     >
-                      <Minus size={14} strokeWidth={3} />
-                    </button>
-                    
-                    <span className={`font-bold text-[12px] tabular-nums ${
+                      {['1.5', '2.5', '3.0', '3.5', '4.5', '5.0', '5.5'].map(val => (
+                        <option key={val} value={val}>{val}m</option>
+                      ))}
+                    </select>
+                    <div className={`flex items-center gap-0.5 font-bold text-[11px] tabular-nums relative z-10 pointer-events-none ${
                       distanceMode === 'custom' ? 'text-blue-700' : 'text-gray-500'
                     }`}>
-                      {customDistance}
-                    </span>
-                    
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const val = parseFloat(customDistance) || 0;
-                        setCustomDistance((val + 0.5).toFixed(1));
-                        setDistanceMode('custom');
-                      }}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        distanceMode === 'custom' ? 'bg-blue-100/50 hover:bg-blue-200 text-blue-600' : 'hover:bg-gray-100 text-gray-400'
-                      }`}
-                    >
-                      <Plus size={14} strokeWidth={3} />
-                    </button>
+                      {customDistance}m
+                      <ChevronDown size={10} strokeWidth={3} />
+                    </div>
                   </div>
-
-                  <button 
-                    onClick={() => setDistanceMode('custom')}
-                    className="absolute inset-0 z-0"
-                  />
                 </div>
               </div>
             </section>
