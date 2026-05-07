@@ -63,7 +63,7 @@ export default function App() {
   const reset = () => {
     setRightEye({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
     setLeftEye({ sphereSign: '-', sphereValue: '', cylinderValue: '' });
-    setCustomDistance('0.5');
+    setCustomDistance('1.5');
     setDistanceMode('1m');
   };
 
@@ -103,7 +103,7 @@ export default function App() {
               {/* Eye Position Results */}
               <div className="bg-blue-600 rounded-3xl shadow-xl shadow-blue-200 py-3 px-6 md:py-4 md:px-6 text-white">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-bold opacity-90 uppercase tracking-[0.2em]">眼位度數</h2>
+                  <h2 className="text-base font-bold opacity-100 uppercase tracking-widest text-white/90">眼位度數</h2>
                   <div className="px-2 py-1 bg-white/10 rounded text-[10px] font-medium">即時換算</div>
                 </div>
                 
@@ -129,7 +129,7 @@ export default function App() {
               {/* 6mm Above Results */}
               <div className="bg-indigo-600 rounded-3xl shadow-xl shadow-indigo-200 py-3 px-6 md:py-4 md:px-6 text-white">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-bold opacity-90 uppercase tracking-[0.2em]">眼位上 6mm 度數</h2>
+                  <h2 className="text-base font-bold opacity-100 uppercase tracking-widest text-white/90">眼位上 6mm 度數</h2>
                   <div className="px-2 py-1 bg-white/10 rounded text-[10px] font-medium">即時換算</div>
                 </div>
                 
@@ -194,7 +194,7 @@ export default function App() {
                       onClick={(e) => e.stopPropagation()}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                     >
-                      {['1.5', '2.5', '3.0', '3.5', '4.5', '5.0', '5.5'].map(val => (
+                      {['1.5', '2.5', '3.0', '3.5', '4.5', '5.0'].map(val => (
                         <option key={val} value={val}>{val}m</option>
                       ))}
                     </select>
